@@ -31,7 +31,7 @@ jobs:
       - name: Commit error log on failure
         if: failure()
         run: |
-          tail -200 build.log > build-error.txt || true
+          { grep -n -A 6 -E '\.java:[0-9]+: error' build.log | head -120; echo '--- tail ---'; tail -40 build.log; } > build-error.txt || true
           git config user.name "ci"
           git config user.email "ci@local"
           git add -f build-error.txt
