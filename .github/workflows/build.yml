@@ -24,7 +24,19 @@ jobs:
           gradle-version: '8.7'
 
       - name: Build debug APK
-        run: gradle assembleDebug --no-daemon --stacktrace
+        run: |
+          set -o pipefail
+          gradle assembleDebug --no-daemon --stacktrace 2>&1 | tee build.log
+
+      - name: Commit error log on failure
+        if: failure()
+        run: |
+          tail -200 build.log > build-error.txt || true
+          git config user.name "ci"
+          git config user.email "ci@local"
+          git add -f build-error.txt
+          git commit -m "ci: build error log" || true
+          git push || true
 
       - name: Rename
         run: cp app/build/outputs/apk/debug/app-debug.apk fuyou.apk
